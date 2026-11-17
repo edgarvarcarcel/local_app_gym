@@ -84,7 +84,7 @@ print(resumen.head())
 ## 👨‍💻 Autor
 
 **Edgar David Varcarcel Trujillo**  
-*Científico de Datos | Jefe de Analítica*
+*Científico de Datos*
 
 - GitHub: [@edgarvarcarcel](https://github.com/edgarvarcarcel)
 - Enfoque: Analítica Avanzada, Ciencia de Datos Aplicada, Ingeniería de Datos y Soluciones Analíticas de Alto Impacto.
