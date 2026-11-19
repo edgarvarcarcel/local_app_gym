@@ -260,7 +260,7 @@
                         💾 Guardar Ajustes
                     </button>
                 </div>
-                <div class="grid grid-cols-3 gap-2.5">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                     <div>
                         <label class="block text-[11px] font-semibold text-slate-400 mb-1">Unidad de Peso</label>
                         <select id="param-unit-select"
@@ -282,7 +282,35 @@
                             <option value="off">Silencio 🔕</option>
                         </select>
                     </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Pantalla Activa</label>
+                        <select id="param-wakelock-select"
+                            class="w-full px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-bold text-white focus:outline-none focus:border-emerald-500">
+                            <option value="on">Evitar bloqueo ☀️</option>
+                            <option value="off">Normal 🌙</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Aviso Entreno Abierto</label>
+                        <select id="param-reminder-select"
+                            class="w-full px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-bold text-white focus:outline-none focus:border-emerald-500">
+                            <option value="45">A los 45 min</option>
+                            <option value="60">A los 60 min</option>
+                            <option value="90">A los 90 min</option>
+                            <option value="120">A las 2 horas</option>
+                            <option value="0">Desactivado</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Notificaciones</label>
+                        <select id="param-notif-select"
+                            class="w-full px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-bold text-white focus:outline-none focus:border-emerald-500">
+                            <option value="on">Activadas 🔔</option>
+                            <option value="off">Desactivadas</option>
+                        </select>
+                    </div>
                 </div>
+                <div id="device-capabilities-bar" class="pt-2 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-[11px]"></div>
             </div>
 
             <!-- Search & Muscle Group Filters -->
@@ -466,15 +494,27 @@
                         </button>
                     </div>
 
-                    <button onclick="app.downloadTrainingTxt()"
-                        class="w-full py-2.5 px-3.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition">
-                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.2"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        <span>Descargar Resumen de Entrenamiento (.TXT)</span>
-                    </button>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <button onclick="app.downloadTrainingTxt()"
+                            class="py-2.5 px-3.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition">
+                            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.2"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span>Descargar Resumen (.TXT)</span>
+                        </button>
+
+                        <button onclick="app.copyTrainingSummaryTxt()"
+                            class="py-2.5 px-3.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition">
+                            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2.2"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                            <span>Copiar Resumen (WhatsApp)</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- What's inside the ZIP explanation -->
@@ -689,9 +729,20 @@
          * GymVault — Complete Local-First Gym Routine & Workout Logger
          * Persistence: Dual LocalStorage + IndexedDB + .ZIP Archive Export/Import/Share
          */
+        const CURRENT_SCHEMA_VERSION = 2;
         const STORAGE_KEY = 'GYMVAULT_STATE_V1';
+        const REST_TIMER_KEY = 'GYMVAULT_REST_TIMER_V2';
         const IDB_NAME = 'GymVaultDB';
         const IDB_STORE = 'kv_store';
+
+        const DEFAULT_SETTINGS = {
+            unit: 'kg',
+            defaultRest: 90,
+            sound: 'on',
+            wakeLock: 'on',
+            notifications: 'on',
+            openWorkoutReminderMin: 90
+        };
 
         const MUSCLE_GROUPS = [
             'Pecho', 'Espalda', 'Pierna', 'Hombro', 'Bíceps', 'Tríceps', 'Core', 'Cardio'
@@ -744,13 +795,9 @@
             const now = Date.now();
             const dayMs = 86400000;
             return {
-                version: 1,
+                version: CURRENT_SCHEMA_VERSION,
                 updatedAt: now,
-                settings: {
-                    unit: 'kg',
-                    defaultRest: 90,
-                    sound: 'on'
-                },
+                settings: { ...DEFAULT_SETTINGS },
                 exercises: [...DEFAULT_EXERCISES],
                 routines: [
                     {
@@ -894,6 +941,12 @@
             restTimerInterval: null,
             restTimerRemaining: 0,
             restTimerTotal: 90,
+            restTimerEndAt: null,
+            wakeLock: null,
+            persistentStorageGranted: false,
+            openWorkoutReminderShownFor: null,
+            openWorkoutAlertActive: false,
+            activePickerFilterMuscle: 'ALL',
             editingRoutineDraft: null,
             audioCtx: null,
             isDirty: false,
@@ -902,9 +955,25 @@
 
             async init() {
                 await this.loadState();
+                this.requestPersistentStorage();
+                this.restoreRestTimer();
                 this.startLiveWorkoutTicker();
                 this.renderAll();
                 this.updateSaveStatusUI();
+
+                if (this.state.activeWorkout) {
+                    this.requestWakeLock();
+                    setTimeout(() => this.checkOpenWorkoutReminder(true), 600);
+                }
+
+                // Resync wall-clock timers & Wake Lock immediately when unlocking phone / returning to tab
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'visible') {
+                        this.syncTimersOnResume();
+                    }
+                });
+                window.addEventListener('focus', () => this.syncTimersOnResume());
+                window.addEventListener('pageshow', () => this.syncTimersOnResume());
 
                 window.addEventListener('resize', () => {
                     if (this.currentTab === 'progress' && this.progressSubtab === 'analytics') {
@@ -925,6 +994,9 @@
                ========================================== */
             markDirty() {
                 this.isDirty = true;
+                if (this.state?.activeWorkout) {
+                    this.state.activeWorkout.lastActivityAt = Date.now();
+                }
                 this.updateSaveStatusUI();
                 clearTimeout(this.autoSaveTimeout);
                 this.autoSaveTimeout = setTimeout(() => {
@@ -1082,6 +1154,73 @@
                 }
             },
 
+            normalizeExerciseSchema(ex) {
+                const safeEx = ex || {};
+                const def = DEFAULT_EXERCISES.find(d => d.id === safeEx.id);
+                const { animType, gifUrl, ...rest } = safeEx;
+                return {
+                    equipment: def?.equipment || 'Barra',
+                    instructions: def?.instructions || 'Mantén la técnica controlada en todo el rango de movimiento.',
+                    observation: '',
+                    ...rest
+                };
+            },
+
+            migrateState(rawState) {
+                const base = rawState && typeof rawState === 'object' ? rawState : createInitialSeedData();
+                let state = { ...base };
+                let version = Number(state.version) || 1;
+
+                // Ensure core collections exist defensively
+                state.settings = { ...DEFAULT_SETTINGS, ...(state.settings || {}) };
+                state.exercises = Array.isArray(state.exercises)
+                    ? state.exercises.map(ex => this.normalizeExerciseSchema(ex))
+                    : [...DEFAULT_EXERCISES];
+                state.routines = Array.isArray(state.routines) ? state.routines : [];
+                state.history = Array.isArray(state.history) ? state.history : [];
+
+                // Incremental migration pipeline: v1 -> v2 (strictly additive; history untouched)
+                if (version < 2) {
+                    state.settings = {
+                        ...DEFAULT_SETTINGS,
+                        ...state.settings,
+                        wakeLock: state.settings.wakeLock || 'on',
+                        notifications: state.settings.notifications || 'on',
+                        openWorkoutReminderMin: state.settings.openWorkoutReminderMin !== undefined
+                            ? Number(state.settings.openWorkoutReminderMin)
+                            : 90
+                    };
+                    if (state.activeWorkout && !state.activeWorkout.lastActivityAt) {
+                        state.activeWorkout.lastActivityAt = state.activeWorkout.startTime || Date.now();
+                    }
+                    version = 2;
+                }
+
+                // Always normalize activeWorkout metadata if present
+                if (state.activeWorkout && typeof state.activeWorkout === 'object') {
+                    if (!state.activeWorkout.lastActivityAt) {
+                        state.activeWorkout.lastActivityAt = state.activeWorkout.startTime || Date.now();
+                    }
+                } else {
+                    state.activeWorkout = null;
+                }
+
+                state.version = CURRENT_SCHEMA_VERSION;
+                state.updatedAt = state.updatedAt || Date.now();
+                return state;
+            },
+
+            async requestPersistentStorage() {
+                try {
+                    if (navigator.storage && navigator.storage.persist) {
+                        const already = navigator.storage.persisted ? await navigator.storage.persisted() : false;
+                        this.persistentStorageGranted = already || (await navigator.storage.persist());
+                    }
+                } catch (e) {
+                    this.persistentStorageGranted = false;
+                }
+            },
+
             async loadState() {
                 let loaded = null;
 
@@ -1110,32 +1249,11 @@
                 const candidates = [loaded, lsData, idbData].filter(Boolean);
                 if (candidates.length > 0) {
                     candidates.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-                    this.state = candidates[0];
+                    this.state = this.migrateState(candidates[0]);
                 } else {
-                    this.state = createInitialSeedData();
+                    this.state = this.migrateState(createInitialSeedData());
                 }
 
-                // Ensure structural integrity
-                if (!this.state.settings) {
-                    this.state.settings = { unit: 'kg', defaultRest: 90, sound: 'on' };
-                }
-                if (!Array.isArray(this.state.exercises)) {
-                    this.state.exercises = [...DEFAULT_EXERCISES];
-                } else {
-                    // Enrich existing exercises with default fields if missing
-                    this.state.exercises = this.state.exercises.map(ex => {
-                        const def = DEFAULT_EXERCISES.find(d => d.id === ex.id);
-                        const { animType, gifUrl, ...rest } = ex;
-                        return {
-                            equipment: def?.equipment || 'Barra',
-                            instructions: def?.instructions || 'Mantén la técnica controlada en todo el rango de movimiento.',
-                            observation: '',
-                            ...rest
-                        };
-                    });
-                }
-                if (!Array.isArray(this.state.routines)) this.state.routines = [];
-                if (!Array.isArray(this.state.history)) this.state.history = [];
                 await this.saveState(false);
             },
 
@@ -1197,6 +1315,73 @@
                 } catch (e) { }
             },
 
+            vibrateDevice(pattern = 30) {
+                try {
+                    if (navigator.vibrate) navigator.vibrate(pattern);
+                } catch (e) { }
+            },
+
+            async requestWakeLock() {
+                if (this.state?.settings?.wakeLock === 'off') return;
+                if (!('wakeLock' in navigator) || document.visibilityState !== 'visible') return;
+                try {
+                    if (this.wakeLock) return;
+                    this.wakeLock = await navigator.wakeLock.request('screen');
+                    this.wakeLock.addEventListener('release', () => {
+                        this.wakeLock = null;
+                    });
+                } catch (e) {
+                    // Gracefully ignored on file:// or unsupported mobile contexts
+                    this.wakeLock = null;
+                }
+            },
+
+            async releaseWakeLock() {
+                try {
+                    if (this.wakeLock) {
+                        await this.wakeLock.release();
+                        this.wakeLock = null;
+                    }
+                } catch (e) {
+                    this.wakeLock = null;
+                }
+            },
+
+            async requestNotificationPermission() {
+                if (!('Notification' in window)) {
+                    this.showToast('Este navegador no soporta notificaciones nativas (usaremos alertas dentro de la app).', 'info');
+                    return;
+                }
+                if (window.location.protocol === 'file:') {
+                    this.showToast('Al abrir como archivo local (file://) el navegador puede bloquear notificaciones nativas; las alertas internas y sonido sí funcionarán.', 'info');
+                }
+                try {
+                    const perm = await Notification.requestPermission();
+                    if (perm === 'granted') {
+                        this.sendBrowserNotification('GymVault — Notificaciones Activas', 'Te avisaremos cuando termine tu descanso o si dejas un entrenamiento abierto.');
+                        this.showToast('🔔 Notificaciones activadas correctamente.');
+                    } else if (perm === 'denied') {
+                        this.showToast('Permiso denegado en el navegador. Usaremos alertas dentro de la app.', 'info');
+                    }
+                    this.renderDeviceCapabilitiesBar();
+                } catch (e) {
+                    this.showToast('No se pudieron activar notificaciones nativas en este modo; las alertas internas siguen activas.', 'info');
+                }
+            },
+
+            sendBrowserNotification(title, body) {
+                if (this.state?.settings?.notifications === 'off') return;
+                try {
+                    if ('Notification' in window && Notification.permission === 'granted') {
+                        new Notification(title, {
+                            body,
+                            tag: 'gymvault-alert',
+                            renotify: true
+                        });
+                    }
+                } catch (e) { }
+            },
+
             /* ==========================================
                NAVIGATION & UI HELPERS
                ========================================== */
@@ -1234,6 +1419,7 @@
                 this.renderDataTab();
                 this.updateHeaderLivePill();
                 this.updateSaveStatusUI();
+                this.renderOpenWorkoutAlertBanner();
             },
 
             getUnit() {
@@ -1280,6 +1466,24 @@
                     .replace(/>/g, '&gt;')
                     .replace(/"/g, '&quot;')
                     .replace(/'/g, '&#039;');
+            },
+
+            normalizeText(str) {
+                return String(str || '')
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .toLowerCase()
+                    .trim();
+            },
+
+            filterExercises(query = '', muscle = 'ALL') {
+                const tokens = this.normalizeText(query).split(/\s+/).filter(Boolean);
+                return (this.state?.exercises || []).filter(ex => {
+                    if (muscle && muscle !== 'ALL' && ex.muscle !== muscle) return false;
+                    if (tokens.length === 0) return true;
+                    const haystack = this.normalizeText(`${ex.name || ''} ${ex.muscle || ''} ${ex.equipment || ''} ${ex.observation || ''}`);
+                    return tokens.every(t => haystack.includes(t));
+                });
             },
 
             formatDuration(sec) {
@@ -1350,24 +1554,117 @@
             },
 
             /* ==========================================
-               LIVE WORKOUT & REST TIMER ENGINE
+               LIVE WORKOUT, LOCK-SCREEN RESILIENT TIMERS & REMINDERS
                ========================================== */
             startLiveWorkoutTicker() {
                 if (this.liveTimerInterval) clearInterval(this.liveTimerInterval);
+                let tickCount = 0;
                 this.liveTimerInterval = setInterval(() => {
                     const active = this.state.activeWorkout;
                     if (!active) {
+                        this.openWorkoutAlertActive = false;
                         this.updateHeaderLivePill();
                         return;
                     }
-                    const elapsed = Math.floor((Date.now() - active.startTime) / 1000);
+                    const elapsed = Math.max(0, Math.floor((Date.now() - active.startTime) / 1000));
                     const formatted = this.formatDuration(elapsed);
                     const bannerTimer = document.getElementById('live-workout-clock');
                     if (bannerTimer) bannerTimer.textContent = formatted;
                     const pillTimer = document.getElementById('header-live-timer');
                     if (pillTimer) pillTimer.textContent = formatted;
                     this.updateHeaderLivePill();
+
+                    tickCount++;
+                    if (tickCount % 30 === 0) {
+                        this.checkOpenWorkoutReminder(false);
+                    }
                 }, 1000);
+            },
+
+            syncTimersOnResume() {
+                // 1. Immediately refresh live workout clock from absolute startTime
+                const active = this.state?.activeWorkout;
+                if (active) {
+                    const elapsed = Math.max(0, Math.floor((Date.now() - active.startTime) / 1000));
+                    const formatted = this.formatDuration(elapsed);
+                    const bannerTimer = document.getElementById('live-workout-clock');
+                    if (bannerTimer) bannerTimer.textContent = formatted;
+                    const pillTimer = document.getElementById('header-live-timer');
+                    if (pillTimer) pillTimer.textContent = formatted;
+                    this.requestWakeLock();
+                    this.checkOpenWorkoutReminder(true);
+                }
+
+                // 2. Immediately resync rest countdown from wall-clock restTimerEndAt
+                if (this.restTimerEndAt) {
+                    this.tickRestTimer();
+                }
+            },
+
+            persistRestTimer() {
+                try {
+                    if (this.restTimerEndAt) {
+                        localStorage.setItem(REST_TIMER_KEY, JSON.stringify({
+                            endAt: this.restTimerEndAt,
+                            total: this.restTimerTotal
+                        }));
+                    } else {
+                        localStorage.removeItem(REST_TIMER_KEY);
+                    }
+                } catch (e) { }
+            },
+
+            restoreRestTimer() {
+                try {
+                    const raw = localStorage.getItem(REST_TIMER_KEY);
+                    if (!raw) return;
+                    const parsed = JSON.parse(raw);
+                    if (!parsed || !parsed.endAt) return;
+                    const rem = Math.ceil((parsed.endAt - Date.now()) / 1000);
+                    if (rem > 0) {
+                        this.restTimerEndAt = parsed.endAt;
+                        this.restTimerTotal = Math.max(rem, Number(parsed.total) || rem);
+                        this.restTimerRemaining = rem;
+                        const bar = document.getElementById('rest-timer-bar');
+                        if (bar) bar.classList.remove('hidden');
+                        this.updateRestTimerUI();
+                        this.ensureRestTimerInterval();
+                    } else {
+                        // Finished while closed or locked
+                        this.restTimerEndAt = null;
+                        this.persistRestTimer();
+                        if (this.state?.activeWorkout && (Date.now() - parsed.endAt) < 15 * 60000) {
+                            this.showToast('⏱️ Tu descanso anterior ya terminó.', 'info');
+                        }
+                    }
+                } catch (e) { }
+            },
+
+            ensureRestTimerInterval() {
+                if (this.restTimerInterval) clearInterval(this.restTimerInterval);
+                this.restTimerInterval = setInterval(() => this.tickRestTimer(), 250);
+            },
+
+            tickRestTimer() {
+                if (!this.restTimerEndAt) {
+                    this.stopRestTimer();
+                    return;
+                }
+                const remaining = Math.ceil((this.restTimerEndAt - Date.now()) / 1000);
+                if (remaining <= 0) {
+                    this.onRestTimerComplete();
+                } else {
+                    this.restTimerRemaining = remaining;
+                    this.updateRestTimerUI();
+                }
+            },
+
+            onRestTimerComplete() {
+                this.stopRestTimer();
+                this.playBeep('timerDone');
+                this.vibrateDevice([220, 100, 220, 100, 320]);
+                this.sendBrowserNotification('⏱️ ¡Descanso terminado!', 'Es hora de tu siguiente serie en GymVault.');
+                this.showToast('⏱️ ¡Tiempo de descanso terminado! A por la siguiente serie.', 'info');
             },
 
             updateHeaderLivePill() {
@@ -1385,46 +1682,153 @@
             startRestTimer(seconds = 90) {
                 if (this.restTimerInterval) clearInterval(this.restTimerInterval);
                 this.restTimerTotal = Math.max(15, Number(seconds) || 90);
+                this.restTimerEndAt = Date.now() + this.restTimerTotal * 1000;
                 this.restTimerRemaining = this.restTimerTotal;
+                this.persistRestTimer();
                 const bar = document.getElementById('rest-timer-bar');
-                bar.classList.remove('hidden');
+                if (bar) bar.classList.remove('hidden');
                 this.updateRestTimerUI();
-
-                this.restTimerInterval = setInterval(() => {
-                    this.restTimerRemaining -= 1;
-                    if (this.restTimerRemaining <= 0) {
-                        this.stopRestTimer();
-                        this.playBeep('timerDone');
-                        this.showToast('¡Tiempo de descanso terminado! A por la siguiente serie.', 'info');
-                    } else {
-                        this.updateRestTimerUI();
-                    }
-                }, 1000);
+                this.requestWakeLock();
+                this.ensureRestTimerInterval();
             },
 
             adjustRestTimer(deltaSec) {
-                this.restTimerRemaining = Math.max(5, this.restTimerRemaining + deltaSec);
+                if (!this.restTimerEndAt) return;
+                const newEndAt = Math.max(Date.now() + 5000, this.restTimerEndAt + deltaSec * 1000);
+                this.restTimerEndAt = newEndAt;
+                this.restTimerRemaining = Math.ceil((this.restTimerEndAt - Date.now()) / 1000);
                 if (this.restTimerRemaining > this.restTimerTotal) {
                     this.restTimerTotal = this.restTimerRemaining;
                 }
+                this.persistRestTimer();
                 this.updateRestTimerUI();
             },
 
             stopRestTimer() {
                 if (this.restTimerInterval) clearInterval(this.restTimerInterval);
                 this.restTimerInterval = null;
+                this.restTimerEndAt = null;
+                this.restTimerRemaining = 0;
+                this.persistRestTimer();
                 const bar = document.getElementById('rest-timer-bar');
                 if (bar) bar.classList.add('hidden');
+                document.title = 'GymVault — Mis Rutinas y Progreso';
+                if (!this.state?.activeWorkout) {
+                    this.releaseWakeLock();
+                }
             },
 
             updateRestTimerUI() {
                 const disp = document.getElementById('rest-timer-display');
                 const prog = document.getElementById('rest-timer-progress');
-                if (disp) disp.textContent = this.formatDuration(this.restTimerRemaining);
+                const formatted = this.formatDuration(this.restTimerRemaining);
+                if (disp) disp.textContent = formatted;
                 if (prog) {
-                    const pct = Math.max(0, Math.min(100, (this.restTimerRemaining / this.restTimerTotal) * 100));
+                    const pct = Math.max(0, Math.min(100, (this.restTimerRemaining / Math.max(1, this.restTimerTotal)) * 100));
                     prog.style.width = `${pct}%`;
                 }
+                document.title = `[${formatted}] GymVault`;
+            },
+
+            checkOpenWorkoutReminder(showModalIfNeeded = false) {
+                const active = this.state?.activeWorkout;
+                if (!active) {
+                    this.openWorkoutAlertActive = false;
+                    return;
+                }
+                const thresholdMin = Number(this.state?.settings?.openWorkoutReminderMin ?? 90);
+                if (!thresholdMin || thresholdMin <= 0) {
+                    this.openWorkoutAlertActive = false;
+                    return;
+                }
+
+                const now = Date.now();
+                if (active.reminderSnoozedUntil && now < active.reminderSnoozedUntil) {
+                    this.openWorkoutAlertActive = false;
+                    return;
+                }
+
+                const lastAct = active.lastActivityAt || active.startTime;
+                const inactiveMin = Math.floor((now - lastAct) / 60000);
+                const totalOpenMin = Math.floor((now - active.startTime) / 60000);
+                const shouldAlert = inactiveMin >= thresholdMin || totalOpenMin >= Math.max(thresholdMin, 120);
+
+                if (!shouldAlert) {
+                    this.openWorkoutAlertActive = false;
+                    return;
+                }
+
+                const wasActive = this.openWorkoutAlertActive;
+                this.openWorkoutAlertActive = true;
+                this.renderOpenWorkoutAlertBanner();
+
+                const alertKey = `${active.id}_${active.reminderSnoozedUntil || 0}`;
+                if (this.openWorkoutReminderShownFor !== alertKey) {
+                    this.openWorkoutReminderShownFor = alertKey;
+                    const msg = `Llevas ${this.formatDuration(Math.floor((now - active.startTime) / 1000))} con "${active.routineName}" abierto. ¿Olvidaste finalizar y guardar?`;
+                    this.sendBrowserNotification('⏳ Entrenamiento abierto en GymVault', msg);
+                    this.vibrateDevice([200, 100, 200]);
+                    this.playBeep('timerDone');
+                    if (showModalIfNeeded || !wasActive) {
+                        this.openOpenWorkoutReminderModal(totalOpenMin);
+                    }
+                }
+            },
+
+            renderOpenWorkoutAlertBanner() {
+                const el = document.getElementById('open-workout-reminder-banner');
+                if (!el) return;
+                const active = this.state?.activeWorkout;
+                if (!active || !this.openWorkoutAlertActive) {
+                    el.className = 'hidden';
+                    el.innerHTML = '';
+                    return;
+                }
+                const mins = Math.max(1, Math.floor((Date.now() - active.startTime) / 60000));
+                el.className = 'bg-amber-500/15 border border-amber-500/50 rounded-2xl p-3 space-y-2 animate-slide-up';
+                el.innerHTML = `
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="text-xs text-amber-200">
+                            <p class="font-extrabold text-amber-300">⏳ Tienes un entrenamiento abierto (${mins} min)</p>
+                            <p class="text-[11px] text-amber-100/80 mt-0.5">Recuerda finalizarlo para guardar tu historial y detener el cronómetro.</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button type="button" onclick="app.finishActiveWorkout()" class="px-3 py-1.5 rounded-xl bg-emerald-500 text-slate-950 font-extrabold text-xs active:scale-95 transition">✅ Finalizar y Guardar</button>
+                        <button type="button" onclick="app.snoozeOpenWorkoutReminder(30)" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-200 border border-slate-700 font-bold text-xs active:scale-95 transition">⏰ Seguir (+30 min)</button>
+                        <button type="button" onclick="app.openConfirmCancelWorkoutModal()" class="px-3 py-1.5 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold text-xs active:scale-95 transition">Descartar</button>
+                    </div>
+                `;
+            },
+
+            openOpenWorkoutReminderModal(totalOpenMin) {
+                const active = this.state?.activeWorkout;
+                if (!active) return;
+                this.openModal(`
+                    <div class="p-5 space-y-4 text-center">
+                        <div class="w-12 h-12 mx-auto rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-2xl">⏳</div>
+                        <div class="space-y-1">
+                            <h3 class="text-base font-extrabold text-white">¿Olvidaste cerrar tu entreno?</h3>
+                            <p class="text-xs text-slate-300">La sesión <strong>"${this.escapeHtml(active.routineName)}"</strong> lleva abierta <strong>${totalOpenMin} minutos</strong>.</p>
+                        </div>
+                        <div class="grid grid-cols-1 gap-2 pt-1">
+                            <button type="button" onclick="app.closeModal(); app.finishActiveWorkout();" class="py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs">✅ Finalizar y Guardar Ahora</button>
+                            <button type="button" onclick="app.snoozeOpenWorkoutReminder(30); app.closeModal();" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs">⏰ Sigo entrenando (recordar en 30 min)</button>
+                            <button type="button" onclick="app.closeModal(); app.openConfirmCancelWorkoutModal();" class="py-2 rounded-xl bg-rose-500/15 text-rose-300 border border-rose-500/30 font-bold text-xs">Descartar Sesión</button>
+                        </div>
+                    </div>
+                `);
+            },
+
+            snoozeOpenWorkoutReminder(minutes = 30) {
+                if (!this.state?.activeWorkout) return;
+                const now = Date.now();
+                this.state.activeWorkout.lastActivityAt = now;
+                this.state.activeWorkout.reminderSnoozedUntil = now + minutes * 60000;
+                this.openWorkoutAlertActive = false;
+                this.renderOpenWorkoutAlertBanner();
+                this.saveState(true);
+                this.showToast(`Recordatorio pospuesto ${minutes} min.`, 'info');
             },
 
             /* ==========================================
@@ -1583,6 +1987,9 @@
                                     ${ex.notes ? `<p class="text-[11px] text-amber-300/90 mt-0.5">💡 ${this.escapeHtml(ex.notes)}</p>` : ''}
                                 </div>
                                 <div class="flex items-center gap-1 shrink-0">
+                                    <button type="button" onclick="app.openReplaceExerciseModal(${exIdx})" title="Reemplazar este ejercicio" class="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 text-[11px] font-bold flex items-center gap-1 active:scale-95 transition">
+                                        <span>🔄</span>
+                                    </button>
                                     <button type="button" onclick="app.openExerciseObservationModal('${ex.exerciseId}')" title="Ver técnica y editar observación" class="px-2 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-[11px] font-bold flex items-center gap-1 active:scale-95 transition">
                                         <span>📝 Obs</span>
                                     </button>
@@ -1624,6 +2031,9 @@
                 }).join('');
 
                 container.innerHTML = `
+                    <!-- Open Workout Inactivity Reminder Banner -->
+                    <div id="open-workout-reminder-banner" class="hidden"></div>
+
                     <!-- Sticky Active Workout Status Card -->
                     <div class="bg-gradient-to-r from-emerald-950/90 via-slate-900 to-slate-900 border border-emerald-500/40 rounded-2xl p-3.5 shadow-xl space-y-3">
                         <div class="flex items-center justify-between gap-2">
@@ -1679,6 +2089,7 @@
                     </div>
                 `;
                 this.updateSaveStatusUI();
+                this.renderOpenWorkoutAlertBanner();
             },
 
             startWorkoutFromRoutine(routineId) {
@@ -1721,19 +2132,86 @@
                     })
                     : [];
 
+                const nowTs = Date.now();
                 this.state.activeWorkout = {
-                    id: 'wk_' + Date.now(),
+                    id: 'wk_' + nowTs,
                     routineId: routine ? routine.id : 'FREE',
                     routineName: routine ? routine.name : 'Entrenamiento Libre',
-                    startTime: Date.now(),
+                    startTime: nowTs,
+                    lastActivityAt: nowTs,
+                    reminderSnoozedUntil: null,
                     notes: '',
                     exercises
                 };
 
+                this.openWorkoutAlertActive = false;
+                this.openWorkoutReminderShownFor = null;
+                this.requestWakeLock();
                 this.saveState();
                 this.renderTrainTab();
                 this.updateHeaderLivePill();
                 this.showToast('¡Entrenamiento iniciado! Tus cambios se guardan en este navegador.', 'info');
+            },
+
+            getRoutineChangesSummary(active) {
+                if (!active || !active.routineId || active.routineId === 'FREE') return null;
+                const orig = this.state.routines.find(r => r.id === active.routineId);
+                if (!orig) return null;
+
+                const origList = orig.exercises || [];
+                const actList = active.exercises || [];
+                const summaryItems = [];
+
+                const origIds = origList.map(e => e.exerciseId);
+                const actIds = actList.map(e => e.exerciseId);
+
+                let changed = origList.length !== actList.length;
+                if (!changed) {
+                    for (let i = 0; i < origList.length; i++) {
+                        if (origList[i].exerciseId !== actList[i].exerciseId || Number(origList[i].sets) !== (actList[i].sets || []).length) {
+                            changed = true;
+                            break;
+                        }
+                    }
+                }
+                if (!changed) return null;
+
+                // Build readable diff items
+                const maxLen = Math.max(origList.length, actList.length);
+                const accountedOrig = new Set();
+                const accountedAct = new Set();
+
+                // Detect direct in-place replacements
+                for (let i = 0; i < Math.min(origList.length, actList.length); i++) {
+                    if (origList[i].exerciseId !== actList[i].exerciseId && !actIds.includes(origList[i].exerciseId) && !origIds.includes(actList[i].exerciseId)) {
+                        const oldName = this.getExerciseById(origList[i].exerciseId).name;
+                        const newName = actList[i].name || this.getExerciseById(actList[i].exerciseId).name;
+                        summaryItems.push(`🔄 Reemplazado: ${oldName} → ${newName}`);
+                        accountedOrig.add(i);
+                        accountedAct.add(i);
+                    }
+                }
+
+                // Detect added exercises
+                actList.forEach((ex, i) => {
+                    if (!accountedAct.has(i) && !origIds.includes(ex.exerciseId)) {
+                        summaryItems.push(`➕ Añadido: ${ex.name}`);
+                    }
+                });
+
+                // Detect removed exercises
+                origList.forEach((item, i) => {
+                    if (!accountedOrig.has(i) && !actIds.includes(item.exerciseId)) {
+                        summaryItems.push(`➖ Quitado: ${this.getExerciseById(item.exerciseId).name}`);
+                    }
+                });
+
+                // Detect set count or order changes
+                if (summaryItems.length === 0) {
+                    summaryItems.push('⚙️ Se ajustó el orden o la cantidad de series de los ejercicios.');
+                }
+
+                return { routine: orig, summaryItems };
             },
 
             finishActiveWorkout() {
@@ -1747,6 +2225,44 @@
                     });
                 });
 
+                const routineChanges = this.getRoutineChangesSummary(active);
+
+                if (routineChanges) {
+                    const changesHtml = routineChanges.summaryItems
+                        .map(line => `<li class="text-xs text-slate-200">${this.escapeHtml(line)}</li>`)
+                        .join('');
+                    const noSetsWarning = completedSets === 0
+                        ? `<p class="text-[11px] text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl p-2">Nota: no marcaste series con ✓, pero la sesión se guardará igualmente.</p>`
+                        : '';
+
+                    this.openModal(`
+                        <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+                            <h3 class="font-extrabold text-base text-white">¿Actualizar rutina original?</h3>
+                            <button onclick="app.closeModal()" class="p-1.5 text-slate-400 hover:text-white">✕</button>
+                        </div>
+                        <div class="p-4 space-y-3 overflow-y-auto max-h-[72vh]">
+                            <p class="text-xs text-slate-300">Detectamos cambios respecto a tu rutina <strong>"${this.escapeHtml(routineChanges.routine.name)}"</strong>:</p>
+                            <ul class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-1.5">
+                                ${changesHtml}
+                            </ul>
+                            ${noSetsWarning}
+                            <p class="text-[11px] text-slate-400">Tu historial histórico anterior permanecerá intacto en ambos casos.</p>
+                        </div>
+                        <div class="p-4 border-t border-slate-800 space-y-2 bg-slate-900">
+                            <button type="button" onclick="app.commitFinishActiveWorkout(true)" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs active:scale-95 transition">
+                                🔄 Guardar Entreno y Actualizar Rutina
+                            </button>
+                            <button type="button" onclick="app.commitFinishActiveWorkout(false)" class="w-full py-2.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/40 font-bold text-xs active:scale-95 transition">
+                                ✅ Guardar Entreno y Mantener Rutina Original
+                            </button>
+                            <button type="button" onclick="app.closeModal()" class="w-full py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">
+                                Seguir Entrenando
+                            </button>
+                        </div>
+                    `);
+                    return;
+                }
+
                 if (completedSets === 0) {
                     this.openModal(`
                         <div class="p-5 space-y-4 text-center">
@@ -1754,22 +2270,38 @@
                             <p class="text-xs text-slate-400">No has marcado ninguna serie con ✓. Si guardas ahora, la sesión se registrará igualmente en tu historial.</p>
                             <div class="grid grid-cols-2 gap-2 pt-1">
                                 <button type="button" onclick="app.closeModal()" class="py-2.5 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs">Seguir Entrenando</button>
-                                <button type="button" onclick="app.commitFinishActiveWorkout()" class="py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-extrabold text-xs">✅ Guardar Igual</button>
+                                <button type="button" onclick="app.commitFinishActiveWorkout(false)" class="py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-extrabold text-xs">✅ Guardar Igual</button>
                             </div>
                         </div>
                     `);
                     return;
                 }
 
-                this.commitFinishActiveWorkout();
+                this.commitFinishActiveWorkout(false);
             },
 
-            async commitFinishActiveWorkout() {
+            async commitFinishActiveWorkout(updateOriginalRoutine = false) {
                 const active = this.state.activeWorkout;
                 if (!active) return;
 
                 clearTimeout(this.autoSaveTimeout);
                 this.closeModal();
+
+                // Optionally sync modified exercises back into the original routine
+                let updatedRoutineName = '';
+                if (updateOriginalRoutine && active.routineId && active.routineId !== 'FREE') {
+                    const rtIdx = this.state.routines.findIndex(r => r.id === active.routineId);
+                    if (rtIdx >= 0) {
+                        this.state.routines[rtIdx].exercises = (active.exercises || []).map(ex => ({
+                            exerciseId: ex.exerciseId,
+                            sets: Math.max(1, (ex.sets || []).length),
+                            reps: ex.targetReps || '8-12',
+                            rest: ex.rest || this.state?.settings?.defaultRest || 90,
+                            notes: ex.notes || ''
+                        }));
+                        updatedRoutineName = this.state.routines[rtIdx].name;
+                    }
+                }
 
                 const endTime = Date.now();
                 const durationSec = Math.max(1, Math.floor((endTime - active.startTime) / 1000));
@@ -1797,12 +2329,20 @@
 
                 this.state.history.unshift(completedWorkout);
                 this.state.activeWorkout = null;
+                this.openWorkoutAlertActive = false;
+                this.openWorkoutReminderShownFor = null;
                 this.stopRestTimer();
+                this.releaseWakeLock();
                 await this.saveState(true);
                 this.updateHeaderLivePill();
                 this.switchTab('progress');
                 this.renderAll();
-                this.showToast('✅ ¡Entrenamiento finalizado y guardado en tu historial!', 'success');
+                this.showToast(
+                    updatedRoutineName
+                        ? `✅ ¡Entreno guardado y rutina "${updatedRoutineName}" actualizada!`
+                        : '✅ ¡Entrenamiento finalizado y guardado en tu historial!',
+                    'success'
+                );
             },
 
             openConfirmCancelWorkoutModal() {
@@ -1822,7 +2362,10 @@
             async discardActiveWorkout() {
                 clearTimeout(this.autoSaveTimeout);
                 this.state.activeWorkout = null;
+                this.openWorkoutAlertActive = false;
+                this.openWorkoutReminderShownFor = null;
                 this.stopRestTimer();
+                this.releaseWakeLock();
                 this.closeModal();
                 await this.saveState(true);
                 this.updateHeaderLivePill();
@@ -1875,6 +2418,7 @@
                     }
                     setObj.done = true;
                     this.playBeep('check');
+                    this.vibrateDevice(30);
                     this.startRestTimer(ex.rest || this.state?.settings?.defaultRest || 90);
                 } else {
                     setObj.done = false;
@@ -1916,43 +2460,160 @@
             },
 
             openAddExerciseToActiveModal() {
-                const optionsHtml = this.state.exercises.map(ex => `
-                    <div class="w-full p-3 rounded-xl bg-slate-950 hover:bg-slate-800/80 border border-slate-800 flex items-center justify-between gap-2 transition">
-                        <div class="truncate">
-                            <span class="font-bold text-sm text-white block truncate">${this.escapeHtml(ex.name)}</span>
-                            <span class="text-[11px] text-slate-400">${this.escapeHtml(ex.muscle)} • ${this.escapeHtml(ex.equipment || 'Libre')}</span>
-                            ${ex.observation ? `<span class="block text-[11px] text-cyan-300/90 truncate mt-0.5">📝 ${this.escapeHtml(ex.observation)}</span>` : ''}
-                        </div>
-                        <div class="flex items-center gap-1.5 shrink-0">
-                            <button type="button" onclick="app.addExerciseToActiveSession('${ex.id}')" class="px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 text-xs font-extrabold">+ Añadir</button>
-                        </div>
-                    </div>
+                this.openActiveExercisePickerModal('add', -1);
+            },
+
+            openReplaceExerciseModal(exIdx) {
+                const active = this.state.activeWorkout;
+                if (!active || !active.exercises[exIdx]) return;
+                this.openActiveExercisePickerModal('replace', exIdx);
+            },
+
+            openActiveExercisePickerModal(mode = 'add', replaceIdx = -1) {
+                this.activePickerFilterMuscle = 'ALL';
+                const active = this.state.activeWorkout;
+                const currentEx = mode === 'replace' && active?.exercises[replaceIdx] ? active.exercises[replaceIdx] : null;
+                const title = mode === 'replace'
+                    ? `Reemplazar: ${currentEx ? currentEx.name : 'Ejercicio'}`
+                    : 'Añadir Ejercicio a la Sesión';
+
+                const muscleChips = ['ALL', ...MUSCLE_GROUPS].map(m => `
+                    <button type="button" data-picker-muscle="${m}" onclick="app.setActivePickerMuscle('${m}', '${mode}', ${replaceIdx})"
+                        class="px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap border transition ${m === 'ALL' ? 'bg-emerald-500 text-slate-950 border-emerald-400' : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-slate-500'}">
+                        ${m === 'ALL' ? 'Todos' : m}
+                    </button>
                 `).join('');
 
                 this.openModal(`
-                    <div class="p-4 border-b border-slate-800 flex items-center justify-between">
-                        <h3 class="font-extrabold text-base text-white">Añadir Ejercicio a la Sesión</h3>
-                        <button onclick="app.closeModal()" class="p-1.5 text-slate-400 hover:text-white">✕</button>
+                    <div class="p-4 border-b border-slate-800 flex items-center justify-between gap-2">
+                        <div class="min-w-0">
+                            <h3 class="font-extrabold text-base text-white truncate">${this.escapeHtml(title)}</h3>
+                            <p class="text-[11px] text-slate-400">${mode === 'replace' ? 'Al finalizar podrás elegir si actualizas tu rutina original' : 'Escribe para filtrar al instante'}</p>
+                        </div>
+                        <button onclick="app.closeModal()" class="p-1.5 text-slate-400 hover:text-white shrink-0">✕</button>
                     </div>
-                    <div class="p-4 space-y-3 overflow-y-auto max-h-[70vh]">
+                    <div class="p-4 space-y-3 overflow-y-auto max-h-[74vh]">
+                        <div class="relative">
+                            <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                            <input id="active-ex-search" type="text" autocomplete="off"
+                                oninput="app.renderActiveExercisePickerList('${mode}', ${replaceIdx})"
+                                placeholder="Escribe el ejercicio (ej: press, remo, femoral)..."
+                                class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-950 border border-emerald-500/40 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400">
+                        </div>
+
+                        <div class="flex gap-1.5 overflow-x-auto pb-1">
+                            ${muscleChips}
+                        </div>
+
+                        <div id="active-ex-picker-list" class="space-y-1.5"></div>
+
                         <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2">
                             <span class="block text-[11px] font-bold text-emerald-400">¿No está en la lista? Créalo al instante:</span>
                             <div class="flex gap-2">
                                 <input id="quick-new-ex-name" type="text" placeholder="Nombre del nuevo ejercicio..." class="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white">
                                 <select id="quick-new-ex-muscle" class="px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white">
-                                    ${MUSCLE_GROUPS.map(m => `<option value="${m}">${m}</option>`).join('')}
+                                    ${MUSCLE_GROUPS.map(m => `<option value="${m}" ${currentEx && currentEx.muscle === m ? 'selected' : ''}>${m}</option>`).join('')}
                                 </select>
-                                <button onclick="app.createAndAddExerciseToActive()" class="px-3 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs whitespace-nowrap">Crear</button>
+                                <button type="button" onclick="app.createAndAddExerciseToActive('${mode}', ${replaceIdx})" class="px-3 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs whitespace-nowrap">Crear</button>
                             </div>
-                        </div>
-                        <div class="space-y-1.5 pt-1">
-                            ${optionsHtml}
                         </div>
                     </div>
                 `);
+
+                this.renderActiveExercisePickerList(mode, replaceIdx);
+                setTimeout(() => document.getElementById('active-ex-search')?.focus(), 50);
             },
 
-            createAndAddExerciseToActive() {
+            setActivePickerMuscle(muscle, mode, replaceIdx) {
+                this.activePickerFilterMuscle = muscle;
+                document.querySelectorAll('[data-picker-muscle]').forEach(btn => {
+                    const isSel = btn.getAttribute('data-picker-muscle') === muscle;
+                    btn.className = `px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap border transition ${isSel ? 'bg-emerald-500 text-slate-950 border-emerald-400' : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-slate-500'}`;
+                });
+                this.renderActiveExercisePickerList(mode, replaceIdx);
+            },
+
+            renderActiveExercisePickerList(mode = 'add', replaceIdx = -1) {
+                const listEl = document.getElementById('active-ex-picker-list');
+                if (!listEl) return;
+                const query = document.getElementById('active-ex-search')?.value || '';
+                const quickInput = document.getElementById('quick-new-ex-name');
+                const matches = this.filterExercises(query, this.activePickerFilterMuscle);
+
+                if (matches.length === 0) {
+                    if (quickInput && query.trim()) quickInput.value = query.trim();
+                    listEl.innerHTML = `
+                        <div class="text-center py-4 bg-slate-950/60 border border-dashed border-slate-800 rounded-xl px-3">
+                            <p class="text-xs text-slate-400">No hay coincidencias para <strong>"${this.escapeHtml(query)}"</strong>. Puedes crearlo abajo en un toque.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const visible = query.trim() || this.activePickerFilterMuscle !== 'ALL' ? matches : matches.slice(0, 12);
+                const moreHint = (!query.trim() && this.activePickerFilterMuscle === 'ALL' && matches.length > visible.length)
+                    ? `<p class="text-[11px] text-slate-500 text-center pt-1">Mostrando ${visible.length} de ${matches.length} — escribe arriba para buscar cualquiera.</p>`
+                    : '';
+
+                listEl.innerHTML = visible.map(ex => {
+                    const actionCall = mode === 'replace'
+                        ? `app.replaceExerciseInActive(${replaceIdx}, '${ex.id}')`
+                        : `app.addExerciseToActiveSession('${ex.id}')`;
+                    const btnLabel = mode === 'replace' ? '🔄 Usar' : '+ Añadir';
+                    const btnStyle = mode === 'replace'
+                        ? 'bg-amber-400 hover:bg-amber-300 text-slate-950'
+                        : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950';
+                    return `
+                        <div class="w-full p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800/80 border border-slate-800 flex items-center justify-between gap-2 transition">
+                            <div class="truncate">
+                                <span class="font-bold text-xs text-white block truncate">${this.escapeHtml(ex.name)}</span>
+                                <span class="text-[11px] text-slate-400">${this.escapeHtml(ex.muscle)} • ${this.escapeHtml(ex.equipment || 'Libre')}</span>
+                                ${ex.observation ? `<span class="block text-[10px] text-cyan-300/90 truncate mt-0.5">📝 ${this.escapeHtml(ex.observation)}</span>` : ''}
+                            </div>
+                            <button type="button" onclick="${actionCall}" class="px-3 py-1.5 rounded-lg ${btnStyle} text-xs font-extrabold shrink-0 active:scale-95 transition">${btnLabel}</button>
+                        </div>
+                    `;
+                }).join('') + moreHint;
+            },
+
+            replaceExerciseInActive(exIdx, newExerciseId) {
+                const active = this.state.activeWorkout;
+                if (!active || !active.exercises[exIdx]) return;
+                const oldEx = active.exercises[exIdx];
+                const newInfo = this.getExerciseById(newExerciseId);
+                const lastPerf = this.getLastPerformanceForExercise(newExerciseId);
+                const numSets = Math.max(1, (oldEx.sets || []).length || 3);
+
+                const newSets = [];
+                for (let i = 0; i < numSets; i++) {
+                    const prev = lastPerf && lastPerf.sets[i] ? lastPerf.sets[i] : (lastPerf && lastPerf.sets[0] ? lastPerf.sets[0] : null);
+                    newSets.push({
+                        weight: prev ? prev.weight : '',
+                        reps: prev ? prev.reps : '',
+                        rir: '',
+                        done: false
+                    });
+                }
+
+                active.exercises[exIdx] = {
+                    exerciseId: newInfo.id,
+                    name: newInfo.name,
+                    muscle: newInfo.muscle,
+                    targetReps: oldEx.targetReps || '8-12',
+                    rest: oldEx.rest || this.state?.settings?.defaultRest || 90,
+                    notes: '',
+                    sets: newSets
+                };
+
+                this.markDirty();
+                this.closeModal();
+                this.renderTrainTab();
+                this.showToast(`🔄 ${oldEx.name} reemplazado por ${newInfo.name}.`, 'info');
+            },
+
+            createAndAddExerciseToActive(mode = 'add', replaceIdx = -1) {
                 const nameInput = document.getElementById('quick-new-ex-name');
                 const muscleSelect = document.getElementById('quick-new-ex-muscle');
                 const name = (nameInput?.value || '').trim();
@@ -1970,7 +2631,11 @@
                     observation: ''
                 };
                 this.state.exercises.unshift(newEx);
-                this.addExerciseToActiveSession(newEx.id);
+                if (mode === 'replace' && replaceIdx >= 0) {
+                    this.replaceExerciseInActive(replaceIdx, newEx.id);
+                } else {
+                    this.addExerciseToActiveSession(newEx.id);
+                }
             },
 
             addExerciseToActiveSession(exerciseId) {
@@ -2156,8 +2821,6 @@
                     `;
                 }).join('');
 
-                const exerciseOptionsHtml = this.state.exercises.map(ex => `<option value="${ex.id}">${this.escapeHtml(ex.name)} (${ex.muscle})</option>`).join('');
-
                 this.openModal(`
                     <div class="p-4 border-b border-slate-800 flex items-center justify-between">
                         <h3 class="font-extrabold text-base text-white">Configurar Rutina</h3>
@@ -2177,20 +2840,25 @@
                                 class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-500">
                         </div>
 
-                        <!-- Add Exercise to Routine -->
+                        <!-- Type-to-Search Autocomplete to Add Exercise to Routine -->
                         <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-3 space-y-2">
-                            <label class="block text-xs font-bold text-emerald-400">+ Agregar Ejercicio a la Rutina</label>
-                            <div class="flex gap-2">
-                                <select id="draft-add-ex-select" class="flex-1 px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white">
-                                    ${exerciseOptionsHtml}
-                                </select>
-                                <button type="button" onclick="app.addExerciseToDraft()" class="px-3.5 py-2 rounded-xl bg-emerald-500 text-slate-950 font-extrabold text-xs whitespace-nowrap">Añadir</button>
+                            <label for="draft-ex-search" class="block text-xs font-bold text-emerald-400">+ Buscar y Agregar Ejercicio</label>
+                            <div class="relative">
+                                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                                <input id="draft-ex-search" type="text" autocomplete="off"
+                                    onfocus="app.filterDraftExerciseSuggestions()"
+                                    oninput="app.filterDraftExerciseSuggestions()"
+                                    placeholder="Escribe para ver opciones (ej: banca, jalon, sentadilla)..."
+                                    class="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
                             </div>
+                            <div id="draft-ex-suggestions" class="hidden max-h-44 overflow-y-auto space-y-1 pt-1"></div>
                         </div>
 
                         <div class="space-y-2">
                             <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Ejercicios (${draft.exercises.length})</label>
-                            ${exRowsHtml || '<p class="text-xs text-slate-500 text-center py-4">Añade al menos un ejercicio arriba</p>'}
+                            ${exRowsHtml || '<p class="text-xs text-slate-500 text-center py-4">Busca y añade al menos un ejercicio arriba</p>'}
                         </div>
                     </div>
                     <div class="p-4 border-t border-slate-800 grid grid-cols-2 gap-2 bg-slate-900">
@@ -2200,17 +2868,67 @@
                 `);
             },
 
-            addExerciseToDraft() {
-                const sel = document.getElementById('draft-add-ex-select');
-                if (!sel || !sel.value) return;
+            filterDraftExerciseSuggestions() {
+                const input = document.getElementById('draft-ex-search');
+                const box = document.getElementById('draft-ex-suggestions');
+                if (!input || !box) return;
+                const query = input.value || '';
+                const matches = this.filterExercises(query, 'ALL').slice(0, 8);
+                box.classList.remove('hidden');
+
+                if (matches.length === 0) {
+                    const cleanQ = query.trim();
+                    box.innerHTML = cleanQ
+                        ? `<button type="button" onclick="app.createAndAddExerciseToDraft()" class="w-full py-2 px-3 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 text-xs font-bold text-left">➕ Crear "${this.escapeHtml(cleanQ)}" y añadir a la rutina</button>`
+                        : `<p class="text-[11px] text-slate-500 px-1 py-1">Escribe el nombre o músculo del ejercicio...</p>`;
+                    return;
+                }
+
+                box.innerHTML = matches.map(ex => {
+                    const badgeClass = MUSCLE_COLORS[ex.muscle] || MUSCLE_COLORS['Pecho'];
+                    return `
+                        <button type="button" onclick="app.addExerciseToDraftById('${ex.id}')"
+                            class="w-full px-2.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 flex items-center justify-between gap-2 text-left transition">
+                            <div class="min-w-0">
+                                <span class="block text-xs font-bold text-white truncate">${this.escapeHtml(ex.name)}</span>
+                                <span class="text-[10px] text-slate-400">${this.escapeHtml(ex.equipment || 'Libre')}${ex.observation ? ' • 📝 ' + this.escapeHtml(ex.observation) : ''}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <span class="text-[10px] px-1.5 py-0.5 rounded border ${badgeClass}">${this.escapeHtml(ex.muscle)}</span>
+                                <span class="text-xs font-extrabold text-emerald-400">+</span>
+                            </div>
+                        </button>
+                    `;
+                }).join('');
+            },
+
+            addExerciseToDraftById(exerciseId) {
+                if (!exerciseId || !this.editingRoutineDraft) return;
                 this.editingRoutineDraft.exercises.push({
-                    exerciseId: sel.value,
+                    exerciseId,
                     sets: 3,
                     reps: '8-10',
-                    rest: 90,
+                    rest: this.state?.settings?.defaultRest || 90,
                     notes: ''
                 });
                 this.renderRoutineModalContent();
+            },
+
+            createAndAddExerciseToDraft() {
+                const input = document.getElementById('draft-ex-search');
+                const name = (input?.value || '').trim();
+                if (!name) return;
+                const newEx = {
+                    id: 'ex_custom_' + Date.now(),
+                    name,
+                    muscle: 'Pecho',
+                    equipment: 'Otro',
+                    instructions: 'Realiza el movimiento controlando la fase excéntrica y concéntrica.',
+                    observation: ''
+                };
+                this.state.exercises.unshift(newEx);
+                this.addExerciseToDraftById(newEx.id);
+                this.showToast(`Ejercicio "${name}" creado y añadido.`);
             },
 
             moveDraftExercise(idx, dir) {
@@ -2259,9 +2977,17 @@
                 const unitSel = document.getElementById('param-unit-select');
                 const restIn = document.getElementById('param-rest-input');
                 const soundSel = document.getElementById('param-sound-select');
+                const wakeSel = document.getElementById('param-wakelock-select');
+                const remSel = document.getElementById('param-reminder-select');
+                const notifSel = document.getElementById('param-notif-select');
                 if (unitSel && this.state.settings) unitSel.value = this.state.settings.unit || 'kg';
                 if (restIn && this.state.settings) restIn.value = this.state.settings.defaultRest || 90;
                 if (soundSel && this.state.settings) soundSel.value = this.state.settings.sound || 'on';
+                if (wakeSel && this.state.settings) wakeSel.value = this.state.settings.wakeLock || 'on';
+                if (remSel && this.state.settings) remSel.value = String(this.state.settings.openWorkoutReminderMin ?? 90);
+                if (notifSel && this.state.settings) notifSel.value = this.state.settings.notifications || 'on';
+
+                this.renderDeviceCapabilitiesBar();
 
                 // Populate muscle filter dropdown
                 const muscleFilterEl = document.getElementById('params-ex-muscle-filter');
@@ -2270,16 +2996,10 @@
                         MUSCLE_GROUPS.map(m => `<option value="${m}">${m}</option>`).join('');
                 }
 
-                const searchVal = (document.getElementById('params-ex-search')?.value || '').toLowerCase().trim();
+                const searchVal = (document.getElementById('params-ex-search')?.value || '').trim();
                 const muscleVal = muscleFilterEl?.value || 'ALL';
 
-                const filtered = this.state.exercises.filter(ex => {
-                    if (muscleVal !== 'ALL' && ex.muscle !== muscleVal) return false;
-                    if (!searchVal) return true;
-                    return (ex.name || '').toLowerCase().includes(searchVal) ||
-                        (ex.equipment || '').toLowerCase().includes(searchVal) ||
-                        (ex.muscle || '').toLowerCase().includes(searchVal);
-                });
+                const filtered = this.filterExercises(searchVal, muscleVal);
 
                 const countLabel = document.getElementById('params-ex-count-label');
                 if (countLabel) {
@@ -2334,16 +3054,53 @@
                 }).join('');
             },
 
+            renderDeviceCapabilitiesBar() {
+                const el = document.getElementById('device-capabilities-bar');
+                if (!el) return;
+                const isSecure = window.isSecureContext;
+                const hasWakeLock = 'wakeLock' in navigator && isSecure;
+                const notifSupported = 'Notification' in window;
+                const notifPerm = notifSupported ? Notification.permission : 'unsupported';
+
+                const notifBadge = notifPerm === 'granted'
+                    ? `<span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-semibold">🔔 Notif: Activas</span>`
+                    : `<button type="button" onclick="app.requestNotificationPermission()" class="px-2.5 py-1 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/40 font-bold active:scale-95 transition">🔔 Activar Notificaciones</button>`;
+
+                el.innerHTML = `
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <span class="px-2 py-0.5 rounded ${hasWakeLock ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : 'bg-slate-800 text-slate-400 border-slate-700'} border font-semibold">
+                            ☀️ Wake Lock: ${hasWakeLock ? 'Disponible' : 'Solo HTTPS'}
+                        </span>
+                        <span class="px-2 py-0.5 rounded ${this.persistentStorageGranted ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : 'bg-slate-800 text-slate-400 border-slate-700'} border font-semibold">
+                            💾 Memoria: ${this.persistentStorageGranted ? 'Persistente' : 'Estándar'}
+                        </span>
+                    </div>
+                    ${notifBadge}
+                `;
+            },
+
             saveParametersSettings() {
                 const unitSel = document.getElementById('param-unit-select');
                 const restIn = document.getElementById('param-rest-input');
                 const soundSel = document.getElementById('param-sound-select');
+                const wakeSel = document.getElementById('param-wakelock-select');
+                const remSel = document.getElementById('param-reminder-select');
+                const notifSel = document.getElementById('param-notif-select');
 
                 this.state.settings = {
+                    ...DEFAULT_SETTINGS,
                     unit: unitSel?.value || 'kg',
                     defaultRest: Math.max(15, parseInt(restIn?.value) || 90),
-                    sound: soundSel?.value || 'on'
+                    sound: soundSel?.value || 'on',
+                    wakeLock: wakeSel?.value || 'on',
+                    openWorkoutReminderMin: remSel ? Number(remSel.value) : 90,
+                    notifications: notifSel?.value || 'on'
                 };
+                if (this.state.settings.wakeLock === 'off') {
+                    this.releaseWakeLock();
+                } else if (this.state.activeWorkout || this.restTimerEndAt) {
+                    this.requestWakeLock();
+                }
                 this.saveState(true);
                 this.renderAll();
                 this.showToast('💾 Parámetros guardados en local correctamente.');
@@ -2369,7 +3126,10 @@
                         <input type="hidden" id="edit-ex-id" value="${this.escapeHtml(ex.id)}">
                         <div>
                             <label class="block text-xs font-bold text-slate-300 mb-1">Nombre del Ejercicio *</label>
-                            <input id="edit-ex-name" type="text" placeholder="Ej: Sentadilla Hack, Remo Pendlay, Aperturas..." value="${this.escapeHtml(ex.name)}" class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm font-bold text-white focus:outline-none focus:border-emerald-500">
+                            <input id="edit-ex-name" type="text" autocomplete="off"
+                                oninput="app.renderEditExNameSuggestions()"
+                                placeholder="Ej: Sentadilla Hack, Remo Pendlay, Aperturas..." value="${this.escapeHtml(ex.name)}" class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm font-bold text-white focus:outline-none focus:border-emerald-500">
+                            <div id="edit-ex-suggestions" class="hidden mt-1.5 space-y-1"></div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-2.5">
@@ -2402,6 +3162,34 @@
                         <button type="button" onclick="app.saveExerciseFromModal()" class="py-3 rounded-xl bg-emerald-500 text-slate-950 font-extrabold text-xs">💾 Guardar Ejercicio en Local</button>
                     </div>
                 `);
+            },
+
+            renderEditExNameSuggestions() {
+                const idVal = document.getElementById('edit-ex-id')?.value;
+                const box = document.getElementById('edit-ex-suggestions');
+                const query = (document.getElementById('edit-ex-name')?.value || '').trim();
+                if (!box) return;
+                if (idVal || query.length < 2) {
+                    box.classList.add('hidden');
+                    box.innerHTML = '';
+                    return;
+                }
+                const matches = this.filterExercises(query, 'ALL').slice(0, 4);
+                if (matches.length === 0) {
+                    box.classList.add('hidden');
+                    box.innerHTML = '';
+                    return;
+                }
+                box.classList.remove('hidden');
+                box.innerHTML = `
+                    <p class="text-[10px] font-bold text-amber-300 px-1">Ejercicios similares ya existentes (toca para editar):</p>
+                    ${matches.map(m => `
+                        <button type="button" onclick="app.openExerciseEditorModal('${m.id}')" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 flex items-center justify-between text-left text-xs">
+                            <span class="font-semibold text-slate-200 truncate">${this.escapeHtml(m.name)}</span>
+                            <span class="text-[10px] text-cyan-400 shrink-0 ml-2">${this.escapeHtml(m.muscle)} →</span>
+                        </button>
+                    `).join('')}
+                `;
             },
 
             saveExerciseFromModal() {
@@ -3168,6 +3956,27 @@
                 this.showToast('Resumen de entrenamiento (.TXT) descargado.');
             },
 
+            async copyTrainingSummaryTxt() {
+                const txt = this.buildTrainingSummaryTxt();
+                try {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(txt);
+                    } else {
+                        const ta = document.createElement('textarea');
+                        ta.value = txt;
+                        ta.style.position = 'fixed';
+                        ta.style.opacity = '0';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                    }
+                    this.showToast('📋 Resumen copiado al portapapeles (listo para pegar en WhatsApp).');
+                } catch (e) {
+                    this.showToast('No se pudo copiar automáticamente; usa "Descargar Resumen (.TXT)".', 'info');
+                }
+            },
+
             triggerBlobDownload(blob, filename) {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -3212,43 +4021,31 @@
                         throw new Error('El archivo no tiene el formato válido de GymVault.');
                     }
 
-                    const normalizeExercise = (e) => {
-                        const { animType, gifUrl, ...rest } = e || {};
-                        return {
-                            equipment: 'Barra',
-                            instructions: 'Mantén la técnica controlada en todo el rango de movimiento.',
-                            observation: '',
-                            ...rest
-                        };
-                    };
+                    const migratedImport = this.migrateState(importedData);
 
                     if (mode === 'replace') {
                         this.state = {
-                            version: 1,
-                            updatedAt: Date.now(),
-                            settings: importedData.settings || { unit: 'kg', defaultRest: 90, sound: 'on' },
-                            exercises: Array.isArray(importedData.exercises) ? importedData.exercises.map(normalizeExercise) : [...DEFAULT_EXERCISES],
-                            routines: Array.isArray(importedData.routines) ? importedData.routines : [],
-                            history: Array.isArray(importedData.history) ? importedData.history : [],
-                            activeWorkout: importedData.activeWorkout || null
+                            ...migratedImport,
+                            updatedAt: Date.now()
                         };
                     } else {
-                        // Merge without duplicating IDs
-                        const exMap = new Map(this.state.exercises.map(e => [e.id, normalizeExercise(e)]));
-                        (importedData.exercises || []).forEach(e => exMap.set(e.id, normalizeExercise(e)));
+                        // Merge without duplicating IDs while preserving full backward compatibility
+                        const exMap = new Map(this.state.exercises.map(e => [e.id, this.normalizeExerciseSchema(e)]));
+                        (migratedImport.exercises || []).forEach(e => exMap.set(e.id, this.normalizeExerciseSchema(e)));
                         this.state.exercises = Array.from(exMap.values());
 
                         const rtMap = new Map(this.state.routines.map(r => [r.id, r]));
-                        (importedData.routines || []).forEach(r => rtMap.set(r.id, r));
+                        (migratedImport.routines || []).forEach(r => rtMap.set(r.id, r));
                         this.state.routines = Array.from(rtMap.values());
 
                         const histMap = new Map(this.state.history.map(h => [h.id, h]));
-                        (importedData.history || []).forEach(h => histMap.set(h.id, h));
+                        (migratedImport.history || []).forEach(h => histMap.set(h.id, h));
                         this.state.history = Array.from(histMap.values()).sort((a, b) => b.startTime - a.startTime);
 
-                        if (!this.state.activeWorkout && importedData.activeWorkout) {
-                            this.state.activeWorkout = importedData.activeWorkout;
+                        if (!this.state.activeWorkout && migratedImport.activeWorkout) {
+                            this.state.activeWorkout = migratedImport.activeWorkout;
                         }
+                        this.state = this.migrateState(this.state);
                     }
 
                     await this.saveState();
@@ -3292,9 +4089,9 @@
 
             async wipeAllDatabase() {
                 this.state = {
-                    version: 1,
+                    version: CURRENT_SCHEMA_VERSION,
                     updatedAt: Date.now(),
-                    settings: { unit: 'kg', defaultRest: 90, sound: 'on' },
+                    settings: { ...DEFAULT_SETTINGS },
                     exercises: [...DEFAULT_EXERCISES],
                     routines: [],
                     history: [],
